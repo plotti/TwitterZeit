@@ -5,16 +5,17 @@ require 'open-uri'
 require 'readability'
 require 'sinatra'
 
+CONFIG = YAML.load_file("config.yaml")
 Twitter.configure do |config|
-			config.consumer_key = "lPeEtUCou8uFFOBt94h3Q"
-			config.consumer_secret = "iBFQqoV9a5qKCiAfitEXFzvkD7jcpSFupG8FBGWE"
-			config.oauth_token = "15533871-abkroGVmE7m1oJGzZ38L29c7o7vDyGGSevx6X25kA"
-			config.oauth_token_secret = "pAoyFeGQlHr53BiRSxpTUpVtQW0B0zMRKBHC3hm3s"
+			config.consumer_key = CONFIG["consumer_key"]
+			config.consumer_secret = CONFIG["consumer_secret"]
+			config.oauth_token = CONFIG["oauth_token"]
+			config.oauth_token_secret = CONFIG["oauth_token_secret"]
 end
 
-Chimps.config[:catalog][:key] = "plotti-zUTHy7q2WmihzHpwi9UtwJZws69"
+Chimps.config[:catalog][:key] = CONFIG["infochimps_key"]
 Chimps.config[:catalog][:secret] = ""
-Chimps.config[:query][:key] = "plotti-zUTHy7q2WmihzHpwi9UtwJZws69"
+Chimps.config[:query][:key] = CONFIG["infochimps_key"]
 
 def get_strong_links_for_person(username)
 	request = Chimps::QueryRequest.new("social/network/tw/graph/strong_links.json", 
