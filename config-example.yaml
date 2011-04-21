@@ -1,0 +1,8 @@
+#Twitter
+consumer_key: "your consumer key"
+consumer_secret: "your consumer secret"
+oauth_token: "your consumer oauth token"
+oauth_token_secret: "your oauth token"
+
+#Infochimps
+infochimps_key: "your infochimps key"
