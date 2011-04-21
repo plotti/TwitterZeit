@@ -53,6 +53,14 @@ def get_tweets(username)
 end
 
 def calculate_newspaper(tweets,strong_ties,central_persons)
+     tweets.each do |tweet|
+        rt_score = 0.5 + tweet[:retweet_value]
+        st_score = 0.5 + strong_ties[tweet.user.id]
+        ct_score = 0.5 + centralality[tweet.user.id]
+        nw_score = 0.5 + tweet[:news_value]
+		score = rt_score + st_score + ct_score + nw_score
+     end
+
      @news << { :created_at => item.created_at, :text => item.text, 
                 :person => item.user.screen_name, :content => content, :title => title,
                 :strength => strong_links[item.user.id], :image => img}
