@@ -4,9 +4,10 @@ require 'open-uri'
 require 'readability'
 require 'sinatra'
 
+# Returns strong ties [[id, strengthth],...] for a given user using the infochimp API
 def get_strong_ties_for(username)
 	begin 
-		result = YAML.loaf_file("/data/" + username + "_strongties")
+		result = YAML.load_file("/data/" + username + "_strongties")
 	rescue
 		puts "Have to get strong ties first"
 	end
@@ -23,6 +24,22 @@ def get_strong_ties_for(username)
 	end	        
 end
 
+def get_friends_for(username)
+	friends = []
+	cursor = -1 
+	counter = 0
+	max = MAX_FRIENDS/100
+	while cursor != 0 && counter < max
+		result = Twitter.friends(username, {:cursor => cursor})
+		friends += result[:users]
+		cursor = result[:next_cursor]
+		puts "Next Cursor for #{username} is #{cursor}"
+		counter += 1
+	end
+	return friends
+end
+
+# Computes Indegree Measures for members of the egonetwork of a given user
 def get_centralities_for(username)
 	#implement a simple 'caching mechanism' to load centralities when we have computed them already
 	begin
@@ -32,11 +49,11 @@ def get_centralities_for(username)
 	end
 	if result == nil
 		friends_friends = {}
-		friends = Twitter.friends(username)[:users]
+		friends = get_friends_for(username)
 		i = 0
-		friends[0..5].each do |friend|
+		friends.each do |friend|
 			puts "Working #{friend.screen_name}"
-			friends_friends[friend.screen_name] = Twitter.friends(friend.screen_name)[:users].collect{|f| f.id}
+			friends_friends[friend.screen_name] = get_freinds_for(friend.screen_name).collect{|f| f.id}
 		end
 		friends.each do |f|
 			f[:in_degree] = 0 
