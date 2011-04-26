@@ -3,6 +3,7 @@ require 'init'
 require 'open-uri'
 require 'readability'
 require 'sinatra'
+require 'digest'
 
 # Returns strong ties [[id, strengthth],...] for a given user using the infochimp API
 def get_strong_ties_for(username)
@@ -45,7 +46,7 @@ def get_centralities_for(username)
 	begin
 		result = YAML.load_file("/data/" + username + "_centralities")
 	rescue 
-		puts "Have to compute centralities first"
+		puts "Have to compute centralities first...This might take a while."
 	end
 	if result == nil
 		friends_friends = {}
@@ -76,10 +77,21 @@ end
 
 def get_content_for(tweets)
 	tweets.each do |tweet|
-		text = open(tweet[:uri]).read rescue ""
-		tweet[:content] = Readability::Document.new(text).content(remove_unlikely_candidates=true) rescue ""
-	    tweet[:title] = Nokogiri::HTML(text).at_css("title").text  rescue ""
-	    tweet[:image] = ""
+		begin
+			file = YAML.load_file("/data/" + Digest::SHA1.hexdigest(tweet[:uri]) + "_content")
+			tweet[:content] = file[:content]
+			tweet[:title] = file[:title]
+			tweet[:image] = file[:image]
+		rescue
+			puts "Have to obtain content for this url first"
+		end
+		if file == nil
+			text = open(tweet[:uri]).read rescue ""
+			tweet[:content] = Readability::Document.new(text).content(remove_unlikely_candidates=true) rescue ""
+	    	tweet[:title] = Nokogiri::HTML(text).at_css("title").text  rescue ""
+		    tweet[:image] = ""
+		    File.open("/data/" + Digest::SHA1.hexdigest(tweet[:uri]) + "_content","w"){|file| file.puts(tweet.to_yaml)}
+		end
 	end
 	return tweets
 end

@@ -8,8 +8,26 @@ describe "sna measures" do
 		result[39520560].should == 1
 	end
 	
-	it "should calculate the indegree for the egonetwork of a user" do 
+	it "should calculate the out_degree for the egonetwork of a user" do 
 		result = get_centralities_for("plotti")
-		result["marc_smith"].should == 27
+		#Indegree of Marc Should be somewhat bigger than 20
+		result["marc_smith"].should > 20 
 	end
+	
+	it "should get the content for the tweets provided" do 
+		tweets = []
+		tweets << Twitter.status(62841348641927169)
+		tweets[0][:uri] = "http://www.spiegel.de/politik/ausland/0,1518,758922,00.html"
+		result = get_content_for(tweets)
+		result.first[:title].should match("Guantanamo")
+		result.first[:content].should match("Aufzeichnungen")
+	end	
+	
+	it "should get the retweets for a given tweet" do 
+		tweets = []
+		tweets << Twitter.status(15312085189)
+		result = get_retweets_for(tweets)
+		result.first[:retweet_ids].count.should be 6
+	end
+	
 end
