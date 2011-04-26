@@ -53,7 +53,7 @@ def get_centralities_for(username)
 		i = 0
 		friends.each do |friend|
 			puts "Working #{friend.screen_name}"
-			friends_friends[friend.screen_name] = get_freinds_for(friend.screen_name).collect{|f| f.id}
+			friends_friends[friend.screen_name] = get_friends_for(friend.screen_name).collect{|f| f.id}
 		end
 		friends.each do |f|
 			f[:in_degree] = 0 
