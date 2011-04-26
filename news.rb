@@ -140,7 +140,7 @@ get '/show/:username' do |username|
 	puts "Calculating newspaper"
 	result = calculate_newspaper(result,strong_ties,centralities)
 	puts "Getting content for best 20 items"
-	result = result.sort!{|a,b| a[:score] <=> b[:score]}[0..20]
+	result = result.sort!{|a,b| a[:score] <=> b[:score]}.reverse[0..20]
 	@news = get_content_for(result)
 	haml :show
 end
