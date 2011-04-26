@@ -30,4 +30,5 @@ describe "sna measures" do
 		result.first[:retweet_ids].count.should be 6
 	end
 	
+	
 end

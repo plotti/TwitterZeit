@@ -4,6 +4,7 @@ require 'open-uri'
 require 'readability'
 require 'sinatra'
 require 'digest'
+require 'pismo'
 
 # Returns strong ties [[id, strengthth],...] for a given user using the infochimp API
 def get_strong_ties_for(username)
@@ -86,10 +87,22 @@ def get_content_for(tweets)
 			puts "Have to obtain content for this url first"
 		end
 		if file == nil
-			text = open(tweet[:uri]).read rescue ""
-			tweet[:content] = Readability::Document.new(text).content(remove_unlikely_candidates=true) rescue ""
-	    	tweet[:title] = Nokogiri::HTML(text).at_css("title").text  rescue ""
-		    tweet[:image] = ""
+			#text = open(tweet[:uri]).read rescue ""
+			#tweet[:content] = Readability::Document.new(text).content(remove_unlikely_candidates=true) rescue ""
+	    	#tweet[:title] = Nokogiri::HTML(text).at_css("title").text  rescue ""
+		    #tweet[:image] = ""
+		    begin 
+		    	doc = Pismo::Document.new(tweet[:uri])
+		    	tweet[:content] = doc.body
+		    	tweet[:title] = doc.title
+		    	tweet[:image] = doc.images.first rescue ""
+		    	tweet[:icon] = doc.favicon rescue ""
+		    rescue
+		    	tweet[:content] = tweet[:uri]
+		    	tweet[:title] = ""
+		    	tweet[:image] = ""
+		    	tweet[:icon] = ""
+		    end
 		    File.open("/data/" + Digest::SHA1.hexdigest(tweet[:uri]) + "_content","w"){|file| file.puts(tweet.to_yaml)}
 		end
 	end
@@ -141,19 +154,39 @@ def get_news_value_for(tweets)
 end
 
 def calculate_newspaper(tweets,strong_ties,centralities)
+	 max_retweets = 0
+	 max_centrality = 0
+	 max_strong = 0
+	 #Normalization of Values to 1
+     centralities.each do |centrality|
+     	if centrality[1] > max_centrality
+     		max_centrality = centrality[1]
+     	end
+     end
      tweets.each do |tweet|
-        rt_score = 0.5 + tweet[:retweet_ids].count
-        st_score = 0.5 + strong_ties[tweet.user.id].to_f
-        ct_score = 0.5 + centralities[tweet.user.screen_name].to_f
-        nw_score = 0.5 + tweet[:news_value]
-		tweet[:score_string] = "Score RT: #{rt_score} ST: #{st_score} CT: #{ct_score} NW: #{nw_score}"
+     	if tweet[:retweet_ids].count > max_retweets
+     		max_retweets = tweet[:retweet_ids].count
+     	end
+     end
+     strong_ties.each do |tie|
+     	if tie[1] > max_strong
+     		max_strong = tie[1]
+     	end
+     end
+     tweets.each do |tweet|
+        rt_score = (tweet[:retweet_ids].count / max_retweets).to_f
+        st_score = (strong_ties[tweet.user.id].to_f/ max_strong)
+        ct_score = (centralities[tweet.user.screen_name].to_f / max_centrality)
+        nw_score = tweet[:news_value]
 		score = rt_score + st_score + ct_score + nw_score
+		tweet[:score_string] = "Total Score: #{score} RT: #{rt_score} ST: #{st_score} CT: #{ct_score} NW: #{nw_score}"
 		tweet[:score] = score
      end
      return tweets
 end
 
 get '/show/:username' do |username|
+	@username = username
 	puts "Calculating strongies"
 	strong_ties = get_strong_ties_for(username)
 	puts "Calculating Centralities"
@@ -175,10 +208,14 @@ get '/show/:username' do |username|
 end
 
 __END__
+@@layout
 %html
-  %title="The #{USERNAME} Times"
+  <?xml version="1.0" encoding="UTF-8"?>
+  %header
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  %title="The #{@username} Times"
   %body
-    %h1="The #{USERNAME} Times"
+    %h1="The #{@username} Times"
     %content=yield
 
 
@@ -186,12 +223,20 @@ __END__
 - @news.each do |item|
   %p
     %h1
+      -if item[:icon] != ""
+        %img{:src => item[:icon]}
       %a{:href => item[:uri]}
         =item[:title]
     ="Tweet: #{item[:text]} (#{item[:created_at]}). "
-    %b="Tweeted by: #{item[:person]} Score: #{item[:score_string]}."
+    %br
+    %b="Tweeted by: #{item[:user][:screen_name]}"
+    %br
+    %b="#{item[:score_string]}."
+    %br
+    %b="Retweeted by #{item[:retweet_ids].count}"    
   %p
-    %p
-      %img{:src => item[:image]}
+    - if item[:image] != ""
+      %p
+        %img{:src => item[:image]}
     =item[:content]
   %hr
