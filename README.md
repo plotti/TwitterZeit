@@ -3,12 +3,15 @@
 Is a very tiny proof of concept of a twittertimes or paperli clone.
 Looking for someone to participate on the project.
 
+It basically helps you to aggregate all of your twitter stream into a nice newspaper.
+the TwitterZeit.
+
 ## Definitions:
-Friends = People a user follows on twitter
-Followers = People that follow a user on twitter
-Ties = Friends or Follower connections on twitter
-Strong Ties = Users that interacted with the @ sign a lot have stronger ties.
-Retweets = People forwarding a tweet to their readers
+* Friends = People a user follows on twitter
+* Followers = People that follow a user on twitter
+* Ties = Friends or Follower connections on twitter
+* Strong Ties = Users that interacted with the @ sign a lot have stronger ties.
+* Retweets = People forwarding a tweet to their readers
 
 ## How does it work?
 

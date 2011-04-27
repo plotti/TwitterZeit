@@ -1,4 +1,4 @@
-require 'init'
+require 'config/init'
 require 'open-uri'
 require 'readability'
 require 'digest'
