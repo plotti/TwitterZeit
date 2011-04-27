@@ -38,11 +38,16 @@ def get_friends_for(username)
 		#Dont get more friends than we think is necessary, default 1000
 		max = MAX_FRIENDS/100
 		while cursor != 0 && counter < max
-			result = Twitter.friends(username, {:cursor => cursor})
-			friends += result[:users]
-			cursor = result[:next_cursor]
-			puts "Next Cursor for #{username} is #{cursor}"
-			counter += 1
+			begin
+				result = Twitter.friends(username, {:cursor => cursor})
+				friends += result[:users]
+				cursor = result[:next_cursor]
+				puts "Next Cursor for #{username} is #{cursor}"
+				counter += 1
+			rescue 
+				puts "Couldn't get friends for #{username}"
+				break
+			end
 		end
 		File.open("/data/" + username + "_friends","w") {|file| file.puts(friends.to_yaml)}
 		return friends
@@ -95,7 +100,7 @@ def get_content_for(tweets)
 			tweet[:title] = file[:title]
 			tweet[:image] = file[:image]
 		rescue
-			puts "Have to obtain content for this url first"
+			puts "Have to obtain content for this url #{tweet[:uri]} first"
 		end
 		if file == nil
 		    # We are using Pismo Gem instead now
@@ -104,16 +109,24 @@ def get_content_for(tweets)
 	    	#tweet[:title] = Nokogiri::HTML(text).at_css("title").text  rescue ""
 		    #tweet[:image] = ""
 		    begin 
-		    	doc = Pismo::Document.new(tweet[:uri])
-		    	tweet[:content] = doc.html_body
-		    	tweet[:title] = doc.html_title
-		    	tweet[:image] = doc.images.first rescue ""
-		    	tweet[:icon] = doc.favicon rescue ""
-		    rescue
+		    	Timeout::timeout(5){
+		    		doc = Pismo::Document.new(tweet[:uri])
+		    		tweet[:content] = doc.html_body
+		    		tweet[:title] = doc.html_title
+		    		tweet[:image] = doc.images.first rescue ""
+		    		tweet[:icon] = doc.favicon rescue ""
+		    	}
+		    rescue Timeout::Error
 		    	tweet[:content] = tweet[:uri]
-		    	tweet[:title] = ""
+		    	tweet[:title] = tweet[:uri]
 		    	tweet[:image] = ""
 		    	tweet[:icon] = ""
+		    rescue 
+		    	tweet[:content] = tweet[:uri]
+		    	tweet[:title] = tweet[:uri]
+		    	tweet[:image] = ""
+		    	tweet[:icon] = ""
+		    rescue 
 		    end
 		    File.open("/data/" + Digest::SHA1.hexdigest(tweet[:uri]) + "_content","w"){|file| file.puts(tweet.to_yaml)}
 		end
@@ -172,7 +185,11 @@ def get_tweets_for(username)
 			puts "Collecting tweets of #{friend.screen_name}"
 		end
 		if result == nil
-			result = Twitter.user_timeline(friend.screen_name)
+			begin
+				result = Twitter.user_timeline(friend.screen_name)
+			rescue
+				result = []
+			end
 			File.open("/data/" + friend.screen_name + "_tweets","w") {|file| file.puts(result.to_yaml)}
 		end
 		tweets += result 
@@ -189,7 +206,7 @@ def get_news_value_for(tweets)
 end
 
 # Calculates all the Values for the newspaper
-def calculate_newspaper(tweets,strong_ties,centralities)
+def calculate_newspaper(tweets,strong_ties,centralities, additive = true)
 	 max_retweets = 0
 	 max_centrality = 0
 	 max_strong = 0
@@ -222,9 +239,13 @@ def calculate_newspaper(tweets,strong_ties,centralities)
         tweet[:st_score] = st_score
         tweet[:ct_score] = ct_score
         tweet[:nw_score] = nw_score
-		score = rt_score + st_score + ct_score + nw_score
-		tweet[:score_string] = "Total Score: #{score} RT: #{rt_score} ST: #{st_score} CT: #{ct_score} NW: #{nw_score}"
+		if additive
+			score = rt_score + st_score + ct_score + nw_score
+		else
+			score = rt_score * st_score * ct_score * nw_score
+		end
 		tweet[:score] = score
+		tweet[:score_string] = "Total Score: #{score} RT: #{rt_score} ST: #{st_score} CT: #{ct_score} NW: #{nw_score}"
      end
      return tweets
 end

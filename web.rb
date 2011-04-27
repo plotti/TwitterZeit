@@ -2,8 +2,7 @@ require 'rubygems'
 require 'sinatra'
 require 'news'
 
-get '/show/:username' do |username|
-	@username = username
+def manufacture_newspaper_for(username)
 	puts "Calculating strongies"
 	strong_ties = get_strong_ties_for(username)
 	puts "Calculating Centralities"
@@ -20,6 +19,21 @@ get '/show/:username' do |username|
 	result = calculate_newspaper(result,strong_ties,centralities)
 	puts "Getting content for best 20 items"
 	result = result.sort!{|a,b| a[:score] <=> b[:score]}.reverse[0..20]
+	File.open("/data/" + username + "_results","w") {|file| file.puts(result.to_yaml)}
+	return result
+end
+
+get '/show/:username' do |username|
+	@username = username
+	begin
+		puts "Serving precomputed newspaper"
+		result = YAML.load_file("/data/" + username + "_results")
+	rescue
+		puts "Have to manufacture the  Newspaper first. "
+	end
+	if result == nil
+		result = manufacture_newspaper_for(username)
+	end
 	@news = get_content_for(result)
 	haml :show
 end
@@ -56,7 +70,8 @@ __END__
       Tweeted by:
       %a{:href => "http://twitter.com/#{item[:user][:screen_name]}/status/#{item[:id_str]}"}
         =item[:user][:screen_name]
-    %h4="Retweeted by #{item[:retweet_ids].count}"    
+    %h4="Retweeted by #{item[:retweet_ids].count}:"
+    %h6="#{item[:retweet_ids].collect{|r| r[:person]}.join(' ')}"    
     - total_score_string = "http://chart.apis.google.com/chart?chxr=0,0,4&chxt=y&chs=300x150&cht=gm&chd=t:#{item[:score]}&chds=0,4&chtt=Total+Value"
     %img{ :src => total_score_string, :width => "300", :height => "150", :alt => "Tweet Value"}
     - pre = "http://chart.apis.google.com/chart?chbh=a,6,20&chs=300x150&cht=bhg&chco=FF0000,00FF00,FF9900,0000FF&chds=0,1,0,1,0,1,0,1&chd="
