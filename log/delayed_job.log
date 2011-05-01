@@ -1,0 +1,72 @@
+# Logfile created on Wed Apr 27 20:17:22 +0200 2011 by logger.rb/22285
+*** Starting job worker delayed_job pid:1237
+  [4;36;1mDelayed::Job Columns (0.7ms)[0m   [0;1mSHOW FIELDS FROM `delayed_jobs`[0m
+  [4;35;1mDelayed::Job Update (0.1ms)[0m   [0mUPDATE `delayed_jobs` SET locked_by = null, locked_at = null WHERE (locked_by = 'delayed_job pid:1237') [0m
+#<Delayed::DeserializationError: Job failed to load: uninitialized constant ManufactureNewspaperJob. Try to manually require the required file.>
+*** Starting job worker delayed_job pid:1329
+  [4;36;1mDelayed::Job Columns (0.6ms)[0m   [0;1mSHOW FIELDS FROM `delayed_jobs`[0m
+  [4;35;1mDelayed::Job Update (0.1ms)[0m   [0mUPDATE `delayed_jobs` SET locked_by = null, locked_at = null WHERE (locked_by = 'delayed_job pid:1329') [0m
+#<Delayed::DeserializationError: Job failed to load: uninitialized constant ManufactureNewspaperJob. Try to manually require the required file.>
+*** Starting job worker delayed_job pid:1430
+  [4;36;1mDelayed::Job Columns (0.6ms)[0m   [0;1mSHOW FIELDS FROM `delayed_jobs`[0m
+* [JOB] acquiring lock on ManufactureNewspaperJob
+  [4;35;1mDelayed::Job Update (0.2ms)[0m   [0mUPDATE `delayed_jobs` SET locked_at = '2011-04-27 20:18:59', locked_by = 'delayed_job pid:1430' WHERE (id = 20 and (locked_at is null or locked_at < '2011-04-27 16:18:59') and (run_at <= '2011-04-27 20:18:59')) [0m
+  [4;36;1mSQL (0.1ms)[0m   [0;1mBEGIN[0m
+  [4;35;1mDelayed::Job Destroy (0.2ms)[0m   [0mDELETE FROM `delayed_jobs` WHERE `id` = 20[0m
+  [4;36;1mSQL (0.0ms)[0m   [0;1mCOMMIT[0m
+* [JOB] ManufactureNewspaperJob completed after 12.3111
+1 jobs processed at 0.0809 j/s, 0 failed ...
+* [JOB] acquiring lock on ManufactureNewspaperJob
+  [4;35;1mDelayed::Job Update (0.2ms)[0m   [0mUPDATE `delayed_jobs` SET locked_at = '2011-04-27 20:20:01', locked_by = 'delayed_job pid:1430' WHERE (id = 21 and (locked_at is null or locked_at < '2011-04-27 16:20:01') and (run_at <= '2011-04-27 20:20:01')) [0m
+  [4;36;1mSQL (0.1ms)[0m   [0;1mBEGIN[0m
+  [4;35;1mDelayed::Job Destroy (0.1ms)[0m   [0mDELETE FROM `delayed_jobs` WHERE `id` = 21[0m
+  [4;36;1mSQL (0.0ms)[0m   [0;1mCOMMIT[0m
+* [JOB] ManufactureNewspaperJob completed after 7.0160
+1 jobs processed at 0.1425 j/s, 0 failed ...
+* [JOB] acquiring lock on ManufactureNewspaperJob
+  [4;35;1mDelayed::Job Update (0.1ms)[0m   [0mUPDATE `delayed_jobs` SET locked_at = '2011-04-27 20:22:03', locked_by = 'delayed_job pid:1430' WHERE (id = 22 and (locked_at is null or locked_at < '2011-04-27 16:22:03') and (run_at <= '2011-04-27 20:22:03')) [0m
+  [4;36;1mSQL (0.1ms)[0m   [0;1mBEGIN[0m
+  [4;35;1mDelayed::Job Destroy (0.1ms)[0m   [0mDELETE FROM `delayed_jobs` WHERE `id` = 22[0m
+  [4;36;1mSQL (0.0ms)[0m   [0;1mCOMMIT[0m
+* [JOB] ManufactureNewspaperJob completed after 7.0351
+1 jobs processed at 0.1421 j/s, 0 failed ...
+Exiting...
+  [4;35;1mDelayed::Job Update (0.2ms)[0m   [0mUPDATE `delayed_jobs` SET locked_by = null, locked_at = null WHERE (locked_by = 'delayed_job pid:1430') [0m
+*** Starting job worker delayed_job pid:21517
+Exiting...
+Exiting...
+Exiting...
+Exiting...
+  [4;36;1mDelayed::Job Update (0.1ms)[0m   [0;1mUPDATE `delayed_jobs` SET locked_by = null, locked_at = null WHERE (locked_by = 'delayed_job pid:21517') [0m
+*** Starting job worker delayed_job pid:21901
+  [4;36;1mDelayed::Job Columns (0.7ms)[0m   [0;1mSHOW FIELDS FROM `delayed_jobs`[0m
+* [JOB] acquiring lock on ManufactureNewspaperJob
+  [4;35;1mDelayed::Job Update (0.2ms)[0m   [0mUPDATE `delayed_jobs` SET locked_at = '2011-04-27 23:42:51', locked_by = 'delayed_job pid:21901' WHERE (id = 23 and (locked_at is null or locked_at < '2011-04-27 19:42:51') and (run_at <= '2011-04-27 23:42:51')) [0m
+  [4;36;1mSQL (0.1ms)[0m   [0;1mBEGIN[0m
+  [4;35;1mDelayed::Job Destroy (0.1ms)[0m   [0mDELETE FROM `delayed_jobs` WHERE `id` = 23[0m
+  [4;36;1mSQL (0.0ms)[0m   [0;1mCOMMIT[0m
+* [JOB] ManufactureNewspaperJob completed after 1136.3007
+1 jobs processed at 0.0009 j/s, 0 failed ...
+Exiting...
+Exiting...
+Exiting...
+Exiting...
+  [4;35;1mDelayed::Job Update (0.2ms)[0m   [0mUPDATE `delayed_jobs` SET locked_by = null, locked_at = null WHERE (locked_by = 'delayed_job pid:21901') [0m
+*** Starting job worker delayed_job pid:17766
+  [4;36;1mDelayed::Job Columns (0.8ms)[0m   [0;1mSHOW FIELDS FROM `delayed_jobs`[0m
+* [JOB] acquiring lock on ManufactureNewspaperJob
+  [4;35;1mDelayed::Job Update (0.1ms)[0m   [0mUPDATE `delayed_jobs` SET locked_at = '2011-05-01 14:13:05', locked_by = 'delayed_job pid:17766' WHERE (id = 24 and (locked_at is null or locked_at < '2011-05-01 10:13:05') and (run_at <= '2011-05-01 14:13:05')) [0m
+  [4;36;1mSQL (0.1ms)[0m   [0;1mBEGIN[0m
+  [4;35;1mDelayed::Job Destroy (0.1ms)[0m   [0mDELETE FROM `delayed_jobs` WHERE `id` = 24[0m
+  [4;36;1mSQL (0.0ms)[0m   [0;1mCOMMIT[0m
+* [JOB] ManufactureNewspaperJob completed after 1158.8351
+1 jobs processed at 0.0009 j/s, 0 failed ...
+Exiting...
+Exiting...
+Exiting...
+Exiting...
+  [4;35;1mDelayed::Job Update (0.2ms)[0m   [0mUPDATE `delayed_jobs` SET locked_by = null, locked_at = null WHERE (locked_by = 'delayed_job pid:17766') [0m
+*** Starting job worker delayed_job pid:12293
+  [4;36;1mDelayed::Job Columns (0.6ms)[0m   [0;1mSHOW FIELDS FROM `delayed_jobs`[0m
+* [JOB] acquiring lock on ManufactureNewspaperJob
+  [4;35;1mDelayed::Job Update (0.1ms)[0m   [0mUPDATE `delayed_jobs` SET locked_at = '2011-05-01 18:39:44', locked_by = 'delayed_job pid:12293' WHERE (id = 25 and (locked_at is null or locked_at < '2011-05-01 14:39:44') and (run_at <= '2011-05-01 18:39:44')) [0m

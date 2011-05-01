@@ -1,3 +1,4 @@
 .main { margin:0 auto; width:780px; }
-
+#header {padding-left:20px; margin:-10px -10px 0; background-color: black; line-height:75px;}
 hr { clear: both; }
+h1#title {color: white;}

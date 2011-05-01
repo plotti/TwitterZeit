@@ -1,37 +1,47 @@
-require 'config/init'
+require 'config/environment'
 require 'open-uri'
 require 'readability'
 require 'digest'
 require 'pismo'
 
+def check(filename,hours = 0)
+ begin
+ 	if File::exists?(filename)
+ 		if hours == 0 
+ 			result = YAML.load_file(filename) 		
+ 		elsif (Time.now - File.mtime(filename))/3600 < hours 
+ 		 	result = YAML.load_file(filename)
+ 		end
+ 	else
+ 		result = nil
+ 	end
+ rescue
+ 	t = Twitter.home_timeline(:count => 1)
+ 	retry
+ end
+ return result
+end
+
 # Returns strong ties [[id, strength],...] for a given user using the infochimp API
 def get_strong_ties_for(username)
-	begin 
-		result = YAML.load_file("/data/" + username + "_strongties")
-	rescue
-		puts "Have to get strong ties first"
-	end
+	result = check("/data/" + username + "_strongties")
 	if result == nil
+		puts "Have to get strong ties first"
 		request = Chimps::QueryRequest.new("social/network/tw/graph/strong_links.json", 
 										:query_params =>{:screen_name => "plotti"})
 		response = request.get
 		response.parse!
 		result = Hash[response.data["strong_links"]]
 		File.open("/data/" + username + "_strongties","w") {|file| file.puts(result.to_yaml)}
-		return result
-	else
-		return result
-	end	        
+	end
+	return result	        
 end
 
 # Returns all friends for a twitter user (friends == people a user follows)
 def get_friends_for(username)
-	begin 
-		friends = YAML.load_file("/data/" + username + "_friends")
-	rescue
-		puts "Have to get all the friends for the user #{username} first"
-	end
+	friends = check("/data/" + username + "_friends")
 	if friends == nil
+		puts "Have to get all the friends for the user #{username} first"
 		friends = []
 		cursor = -1 
 		counter = 0
@@ -50,21 +60,15 @@ def get_friends_for(username)
 			end
 		end
 		File.open("/data/" + username + "_friends","w") {|file| file.puts(friends.to_yaml)}
-		return friends
-	else
-		return friends
 	end
+	return friends
 end
 
 # Computes Indegree Measures for members of the egonetwork of a given user
 def get_centralities_for(username)
-	#implement a simple 'caching mechanism' to load centralities when we have computed them already
-	begin
-		result = YAML.load_file("/data/" + username + "_centralities")
-	rescue 
-		puts "Have to compute centralities first...This might take a while."
-	end
+	result = check("/data/" + username + "_centralities")
 	if result == nil
+		puts "Have to compute centralities first...This might take a while."
 		friends_friends = {}
 		friends = get_friends_for(username)
 		i = 0
@@ -85,47 +89,42 @@ def get_centralities_for(username)
 			result[friend[:screen_name]] = friend[:in_degree]
 		end
 		File.open("/data/" + username + "_centralities","w") {|file| file.puts(result.to_yaml)}
-		return result
-	else
-		return result
 	end
+	return result
 end
 
 #Gets the Content for a given url using the readability project
 def get_content_for(tweets)
 	tweets.each do |tweet|
-		begin
-			file = YAML.load_file("/data/" + Digest::SHA1.hexdigest(tweet[:uri]) + "_content")
+		file = check("/data/" + Digest::SHA1.hexdigest(tweet[:uri]) + "_content")
+		if file != nil
 			tweet[:content] = file[:content]
 			tweet[:title] = file[:title]
 			tweet[:image] = file[:image]
-		rescue
+			tweet[:short] = file[:short]
+		else
 			puts "Have to obtain content for this url #{tweet[:uri]} first"
-		end
-		if file == nil
-		    # We are using Pismo Gem instead now
-			#text = open(tweet[:uri]).read rescue ""
-			#tweet[:content] = Readability::Document.new(text).content(remove_unlikely_candidates=true) rescue ""
-	    	#tweet[:title] = Nokogiri::HTML(text).at_css("title").text  rescue ""
-		    #tweet[:image] = ""
 		    begin 
-		    	Timeout::timeout(5){
+		    	Timeout::timeout(20){
 		    		doc = Pismo::Document.new(tweet[:uri])
 		    		tweet[:content] = doc.html_body
 		    		tweet[:title] = doc.html_title
 		    		tweet[:image] = doc.images.first rescue ""
 		    		tweet[:icon] = doc.favicon rescue ""
+		    		tweet[:short] = doc.body
 		    	}
 		    rescue Timeout::Error
 		    	tweet[:content] = tweet[:uri]
 		    	tweet[:title] = tweet[:uri]
 		    	tweet[:image] = ""
 		    	tweet[:icon] = ""
+		    	tweet[:short] = ""
 		    rescue 
 		    	tweet[:content] = tweet[:uri]
 		    	tweet[:title] = tweet[:uri]
 		    	tweet[:image] = ""
 		    	tweet[:icon] = ""
+		    	tweet[:short] = ""
 		    rescue 
 		    end
 		    File.open("/data/" + Digest::SHA1.hexdigest(tweet[:uri]) + "_content","w"){|file| file.puts(tweet.to_yaml)}
@@ -140,10 +139,7 @@ end
 def get_retweets_for(tweets)
 	i = 0
 	tweets.each do |tweet|
-		begin
-			tweet[:retweet_ids] = YAML.load_file("/data/" + tweet.id.to_s + "_retweets")
-		rescue
-		end
+		tweet[:retweet_ids] = check("/data/" + tweet.id.to_s + "_retweets",2)
 		if tweet[:retweet_ids] == nil
 			puts "Have to calculate Retweets for #{i} of #{tweets.count}"		
 			i += 1
@@ -173,18 +169,15 @@ end
 
 # Gets enough relevant tweets for a user
 # This operation takes quite long
-#TODO the cached version needs to be updated every couple of hours etc... maybe individually based on the rate of each tweeter
+#TODO Maybe check individually based on the rate of each tweeter
 def get_tweets_for(username)
 	friends = get_friends_for(username)
 	tweets = []
 	friends.each do |friend|
 	    # We will get 20 most recent tweets from each person we follow
-		begin 
-			result = YAML.load_file("/data/" + friend.screen_name + "_tweets")
-		rescue
-			puts "Collecting tweets of #{friend.screen_name}"
-		end
+		result = check("/data/" + friend.screen_name + "_tweets",8)
 		if result == nil
+			puts "Collecting tweets of #{friend.screen_name}"
 			begin
 				result = Twitter.user_timeline(friend.screen_name)
 			rescue

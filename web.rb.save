@@ -3,15 +3,9 @@ require 'sinatra'
 require 'yaml'
 require 'news'
 
-class ManufactureNewspaperJob < Struct.new(:username, :email)
+class ManufactureNewspaperJob < Struct.new(:username)
   def perform
     manufacture_newspaper_for(username)
-  	if email != ""
-    	Pony.mail( :to => email, 
-    			   :subject => "Hi #{username} deine TwitterZeit ist fertig", 
-    			   :body => "Unter http://livesein.de:4567/show#{username} you can read Your Twitter Times"
-    		  	)
-   	end
   end
 end
 
@@ -45,8 +39,6 @@ end
 post '/' do 
 	@username = params[:username]
     @email = params[:email]
-    Delayed::Job.enqueue(ManufactureNewspaperJob.new(@username,@email))
-    redirect '/wait'
 end
 
 get '/wait' do 
@@ -54,6 +46,7 @@ get '/wait' do
 end
 
 get '/new/:username' do |username|
+	Delayed::Job.enqueue(ManufactureNewspaperJob.new(username))
     redirect '/wait'        
 end
 
@@ -82,15 +75,11 @@ __END__
     %link{ :rel => "stylesheet", :type => "text/css", :href => "/default.uni-form.css"}
     %script{ :type =>"text/javascript", :src => "http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"}
     %script{ :type =>"text/javascript", :src => "/uni-form-validation.jquery.min.js"}
-    %script{ :type =>"text/javascript", :src => "/jquery.readmore.js"}
     %meta{ "http-equiv" => "Content-Type", :content => "text/html; charset=utf-8"}
   %title="The #{@username} Zeit"
   %body
     :javascript
-      $(function(){ $('form.uniForm').uniform(); });
-      $(document).ready(function() {
-        $(".post").readmore();
-      });
+      $(function(){ $('form.uniForm').uniform(); }); 
     #header
       %h1{:id => "title"}
         ="The #{@username} Zeit"      
@@ -142,9 +131,6 @@ __END__
     - val = "t:#{item[:nw_score]}|#{item[:rt_score]}|#{item[:ct_score]}|#{item[:st_score]}"
     - suff = "&chm=tRecency,000000,0,0,13|tRetweets,000000,1,1,13,-1|tAuthority,000000,2,0,13|tFriend+Value,000000,3,1,13"
     %img{ :src => "#{pre+val+suff}", :width => "300", :height => "150", :alt => "" }
-  .post
-    %img{:src => item[:image]}
-    =item[:short]
-  .long{:style => "'display:hidden;'"}
+  %p
     =item[:content]
   %hr

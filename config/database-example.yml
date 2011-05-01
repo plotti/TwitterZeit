@@ -1,0 +1,5 @@
+adapter: mysql
+database: twitter_zeit
+username: your_username
+password: your_password
+host: localhost
